@@ -1,0 +1,25 @@
+# Criar Cluster - 8080=api, 8181=prometheus, 8282=grafana
+k3d cluster create meucluster --servers 1 --agents 2 -p "8080:30000@loadbalancer" -p "8181:30001@loadbalancer" -p "8282:30002@loadbalancer"
+
+# Instalar Prometheus
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add kube-state-metrics https://kubernetes.github.io/kube-state-metrics
+helm repo update
+helm show values prometheus-community/prometheus > prometheus-values.yml
+helm install prometheus prometheus-community/prometheus --values prometheus-values.yml
+
+# Instalar Grafana
+ helm repo add grafana https://grafana.github.io/helm-charts
+ helm repo update
+ helm show values grafana/grafana > grafana-values.yml
+ helm install grafana grafana/grafana --values grafana-values.yml
+
+ # Listar os repositórios do Helm
+ helm repo list
+
+# Iniciar os deployments
+kubectl apply -f api-produto/k8s/mongodb
+kubectl apply -f api-produto/k8s/api
+
+# Executar um load na api
+while true; do curl http://localhost:8080/api/produto; sleep 0.5; done
